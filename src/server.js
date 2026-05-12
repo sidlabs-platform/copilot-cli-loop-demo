@@ -27,6 +27,27 @@ app.post('/tasks', (req, res) => {
   res.status(201).json(task);
 });
 
+app.put('/tasks/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const task = tasks.find((t) => t.id === id);
+  if (!task) {
+    return res.status(404).json({ error: 'Task not found' });
+  }
+
+  const { title, completed } = req.body || {};
+  if (title === undefined && completed === undefined) {
+    return res.status(400).json({ error: 'title or completed is required' });
+  }
+  if (completed !== undefined && typeof completed !== 'boolean') {
+    return res.status(400).json({ error: 'completed must be a boolean' });
+  }
+
+  if (title !== undefined) task.title = title;
+  if (completed !== undefined) task.completed = completed;
+
+  res.status(200).json(task);
+});
+
 app.delete('/tasks/:id', (req, res) => {
   // NOTE: Always returns 200 even when id is missing — see issue #6.
   const id = Number(req.params.id);
