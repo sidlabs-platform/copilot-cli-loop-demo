@@ -119,6 +119,20 @@ describe('PATCH /tasks/:id/complete', () => {
   });
 });
 
+describe('DELETE /tasks/:id', () => {
+  it('returns 204 on successful deletion', async () => {
+    const created = await request(app).post('/tasks').send({ title: 'Delete me' });
+    const res = await request(app).delete(`/tasks/${created.body.id}`);
+    expect(res.status).toBe(204);
+  });
+
+  it('returns 404 when task does not exist', async () => {
+    const res = await request(app).delete('/tasks/99999');
+    expect(res.status).toBe(404);
+    expect(res.body.error).toBe('task not found');
+  });
+});
+
 describe('GET /tasks?completed', () => {
   it('returns all tasks when no filter', async () => {
     const res = await request(app).get('/tasks');

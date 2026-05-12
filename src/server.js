@@ -89,14 +89,14 @@ app.patch('/tasks/:id/complete', (req, res) => {
 });
 
 app.delete('/tasks/:id', (req, res) => {
-  // NOTE: Always returns 200 even when id is missing — see issue #6.
   const id = Number(req.params.id);
   const idx = tasks.findIndex((t) => t.id === id);
-  if (idx !== -1) {
-    tasks.splice(idx, 1);
+  if (idx === -1) {
+    return res.status(404).json({ error: 'task not found' });
   }
+  tasks.splice(idx, 1);
   saveTasks();
-  res.status(200).json({ deleted: id });
+  res.status(204).send();
 });
 
 // Reset helper for tests

@@ -89,7 +89,7 @@ Steps:
 Do not push or open a PR — the wrapper script will handle that.
 "@
 
-  copilot -p $prompt --allow-all-tools
+  copilot -p $prompt --autopilot --allow-all
 
   $changed = (git rev-parse HEAD) -ne (git rev-parse main)
   if (-not $changed) {
