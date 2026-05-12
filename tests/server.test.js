@@ -1,5 +1,15 @@
 const request = require('supertest');
+const path = require('path');
+const os = require('os');
+
+// Point persistence at a temp file so tests don't touch the repo root
+process.env.TASKS_FILE = path.join(os.tmpdir(), `tasks-test-${process.pid}.json`);
+
 const app = require('../src/server');
+
+beforeEach(() => {
+  app._resetTasks();
+});
 
 describe('GET /health', () => {
   it('returns 200 and status ok', async () => {
