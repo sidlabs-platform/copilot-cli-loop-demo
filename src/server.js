@@ -11,7 +11,15 @@ app.get('/health', (req, res) => {
 });
 
 app.get('/tasks', (req, res) => {
-  res.json(tasks);
+  const { completed } = req.query;
+  if (completed === undefined) {
+    return res.json(tasks);
+  }
+  if (completed !== 'true' && completed !== 'false') {
+    return res.status(400).json({ error: 'completed must be "true" or "false"' });
+  }
+  const flag = completed === 'true';
+  res.json(tasks.filter((t) => t.completed === flag));
 });
 
 app.post('/tasks', (req, res) => {

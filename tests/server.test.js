@@ -74,3 +74,33 @@ describe('PATCH /tasks/:id/complete', () => {
     expect(res.status).toBe(404);
   });
 });
+
+describe('GET /tasks?completed', () => {
+  it('returns all tasks when no filter', async () => {
+    const res = await request(app).get('/tasks');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+
+  it('filters completed tasks', async () => {
+    const created = await request(app)
+      .post('/tasks')
+      .send({ title: 'Filter test' });
+    await request(app).patch(`/tasks/${created.body.id}/complete`);
+
+    const res = await request(app).get('/tasks?completed=true');
+    expect(res.status).toBe(200);
+    res.body.forEach((t) => expect(t.completed).toBe(true));
+  });
+
+  it('filters incomplete tasks', async () => {
+    const res = await request(app).get('/tasks?completed=false');
+    expect(res.status).toBe(200);
+    res.body.forEach((t) => expect(t.completed).toBe(false));
+  });
+
+  it('returns 400 for invalid completed value', async () => {
+    const res = await request(app).get('/tasks?completed=maybe');
+    expect(res.status).toBe(400);
+  });
+});
