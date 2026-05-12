@@ -1,10 +1,27 @@
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 app.use(express.json());
 
-// In-memory store. Persistence is intentionally not implemented (see issue #4).
-const tasks = [];
+const TASKS_FILE = process.env.TASKS_FILE || path.join(__dirname, '..', 'tasks.json');
+
+// Load tasks from file (or start empty)
+let tasks = [];
+function loadTasks() {
+  try {
+    if (fs.existsSync(TASKS_FILE)) {
+      tasks = JSON.parse(fs.readFileSync(TASKS_FILE, 'utf-8'));
+    }
+  } catch {
+    tasks = [];
+  }
+}
+function saveTasks() {
+  fs.writeFileSync(TASKS_FILE, JSON.stringify(tasks, null, 2));
+}
+loadTasks();
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
@@ -32,6 +49,7 @@ app.post('/tasks', (req, res) => {
     completed: false,
   };
   tasks.push(task);
+  saveTasks();
   res.status(201).json(task);
 });
 
@@ -53,6 +71,7 @@ app.put('/tasks/:id', (req, res) => {
   if (title !== undefined) task.title = title;
   if (completed !== undefined) task.completed = completed;
 
+  saveTasks();
   res.status(200).json(task);
 });
 
@@ -63,6 +82,7 @@ app.patch('/tasks/:id/complete', (req, res) => {
     return res.status(404).json({ error: 'Task not found' });
   }
   task.completed = !task.completed;
+  saveTasks();
   res.status(200).json(task);
 });
 
@@ -73,7 +93,14 @@ app.delete('/tasks/:id', (req, res) => {
   if (idx !== -1) {
     tasks.splice(idx, 1);
   }
+  saveTasks();
   res.status(200).json({ deleted: id });
 });
+
+// Reset helper for tests
+app._resetTasks = () => {
+  tasks.length = 0;
+  if (fs.existsSync(TASKS_FILE)) fs.unlinkSync(TASKS_FILE);
+};
 
 module.exports = app;
