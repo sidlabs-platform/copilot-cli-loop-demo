@@ -5,6 +5,17 @@ const path = require('path');
 const app = express();
 app.use(express.json());
 
+// Request logging middleware (disabled in test)
+if (process.env.NODE_ENV !== 'test') {
+  app.use((req, res, next) => {
+    const start = Date.now();
+    res.on('finish', () => {
+      console.log(`${req.method} ${req.originalUrl} ${res.statusCode} ${Date.now() - start}ms`);
+    });
+    next();
+  });
+}
+
 const TASKS_FILE = process.env.TASKS_FILE || path.join(__dirname, '..', 'tasks.json');
 
 // Load tasks from file (or start empty)
