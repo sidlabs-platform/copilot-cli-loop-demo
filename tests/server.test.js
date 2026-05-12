@@ -51,6 +51,13 @@ describe('POST /tasks', () => {
     const res = await request(app).post('/tasks').send({ title: 123 });
     expect(res.status).toBe(400);
   });
+
+  it('does not reuse ids after deletion', async () => {
+    const first = await request(app).post('/tasks').send({ title: 'First' });
+    await request(app).delete(`/tasks/${first.body.id}`);
+    const second = await request(app).post('/tasks').send({ title: 'Second' });
+    expect(second.body.id).not.toBe(first.body.id);
+  });
 });
 
 describe('PUT /tasks/:id', () => {
