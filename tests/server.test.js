@@ -51,3 +51,26 @@ describe('PUT /tasks/:id', () => {
     expect(res.status).toBe(400);
   });
 });
+
+describe('PATCH /tasks/:id/complete', () => {
+  it('toggles completed twice and returns correct state', async () => {
+    const created = await request(app)
+      .post('/tasks')
+      .send({ title: 'Toggle me' });
+    const id = created.body.id;
+    expect(created.body.completed).toBe(false);
+
+    const first = await request(app).patch(`/tasks/${id}/complete`);
+    expect(first.status).toBe(200);
+    expect(first.body.completed).toBe(true);
+
+    const second = await request(app).patch(`/tasks/${id}/complete`);
+    expect(second.status).toBe(200);
+    expect(second.body.completed).toBe(false);
+  });
+
+  it('returns 404 for non-existent task', async () => {
+    const res = await request(app).patch('/tasks/99999/complete');
+    expect(res.status).toBe(404);
+  });
+});
