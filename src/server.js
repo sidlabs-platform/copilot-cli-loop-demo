@@ -9,13 +9,16 @@ const TASKS_FILE = process.env.TASKS_FILE || path.join(__dirname, '..', 'tasks.j
 
 // Load tasks from file (or start empty)
 let tasks = [];
+let nextId = 1;
 function loadTasks() {
   try {
     if (fs.existsSync(TASKS_FILE)) {
       tasks = JSON.parse(fs.readFileSync(TASKS_FILE, 'utf-8'));
+      nextId = tasks.reduce((max, t) => Math.max(max, t.id), 0) + 1;
     }
   } catch {
     tasks = [];
+    nextId = 1;
   }
 }
 function saveTasks() {
@@ -45,8 +48,7 @@ app.post('/tasks', (req, res) => {
     return res.status(400).json({ error: 'title is required' });
   }
   const task = {
-    // NOTE: id derived from length — collisions possible after deletes. See issue #7.
-    id: tasks.length + 1,
+    id: nextId++,
     title,
     completed: false,
   };
@@ -102,6 +104,7 @@ app.delete('/tasks/:id', (req, res) => {
 // Reset helper for tests
 app._resetTasks = () => {
   tasks.length = 0;
+  nextId = 1;
   if (fs.existsSync(TASKS_FILE)) fs.unlinkSync(TASKS_FILE);
 };
 
