@@ -40,8 +40,10 @@ app.get('/tasks', (req, res) => {
 });
 
 app.post('/tasks', (req, res) => {
-  // NOTE: Does not validate title — see issue #5.
   const { title } = req.body || {};
+  if (typeof title !== 'string' || title.trim().length === 0) {
+    return res.status(400).json({ error: 'title is required' });
+  }
   const task = {
     // NOTE: id derived from length — collisions possible after deletes. See issue #7.
     id: tasks.length + 1,

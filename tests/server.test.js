@@ -19,6 +19,40 @@ describe('GET /health', () => {
   });
 });
 
+describe('POST /tasks', () => {
+  it('creates a task with valid title', async () => {
+    const res = await request(app).post('/tasks').send({ title: 'Valid' });
+    expect(res.status).toBe(201);
+    expect(res.body.title).toBe('Valid');
+  });
+
+  it('returns 400 when body is missing', async () => {
+    const res = await request(app).post('/tasks').send();
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('title is required');
+  });
+
+  it('returns 400 when title is missing', async () => {
+    const res = await request(app).post('/tasks').send({ completed: false });
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 400 when title is empty string', async () => {
+    const res = await request(app).post('/tasks').send({ title: '' });
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 400 when title is whitespace only', async () => {
+    const res = await request(app).post('/tasks').send({ title: '   ' });
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 400 when title is not a string', async () => {
+    const res = await request(app).post('/tasks').send({ title: 123 });
+    expect(res.status).toBe(400);
+  });
+});
+
 describe('PUT /tasks/:id', () => {
   it('updates a task and returns 200', async () => {
     const created = await request(app)
